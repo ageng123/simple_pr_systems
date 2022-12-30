@@ -24,5 +24,5 @@ Route::group(["prefix" => "users"], function(){
     Route::post("/", [User::class, "store"])->name("api.user.store");
     Route::get("/{uuid}", [User::class, "find"])->name("api.user.find");
     Route::put("/{uuid}", [User::class, "update"])->name("api.user.update");
-
+    Route::delete("/{uuid}", [User::class, "delete"])->name("api.user.delete");
 });

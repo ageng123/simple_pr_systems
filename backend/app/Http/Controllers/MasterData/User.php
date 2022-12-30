@@ -8,7 +8,7 @@ use App\Repositories\UserRepository;
 use DB;
 use App\Http\Requests\MasterData\UserRequest;
 use Illuminate\Support\Str;
-
+use Hash;
 class User extends Controller
 {
     //
@@ -42,6 +42,7 @@ class User extends Controller
                 if(empty($arrRequest["phone_number"])) $arrRequest["phone_number"] = 0;
                 if(empty($arrRequest["uuid"])) $arrRequest["uuid"] = Str::orderedUuid();
                 $this->dataResponses["data"] = $arrRequest;
+                $arrRequest["password"] = Hash::make($arrRequest["password"]);
                 $save = $this->repository->save($arrRequest);
                 if(!$save) {
                     DB::rollback();
@@ -80,14 +81,20 @@ class User extends Controller
             $user = $this->repository->Find(["uuid" => $uuid]);
             if(!$user) throw new \Exception("Record Not Found");
             $trans = DB::transaction(function()use($user, $request){
-                $save = $this->repository->Update($request->toArray(), ["uuid" => $user->uuid]);
+                $arrRequest = $request->toArray();
+                if(!empty($request['password'])){
+                    $arrRequest['password'] = Hash::make($arrRequest['password']);
+                }
+                $save = $this->repository->Update($arrRequest, ["uuid" => $user->uuid]);
                 if(!$save){
+                    DB::rollback();
                     $this->dataResponses["data"] = $request->toArray();
                     return false;
                 }
                 $this->dataResponses["data"] = $request->toArray();
                 $this->dataResponses["success"] = true;
                 $this->dataResponses["messages"] = "Update Data on User Success!";
+                DB::commit();
                 return true;
             });
             if($trans) return $this->responseJSON(200);
@@ -101,15 +108,18 @@ class User extends Controller
     {
         try{
             $user = $this->repository->Find(["uuid" => $uuid]);
-            $trans = DB::transactions(function()use($user){
+            $trans = DB::transaction(function()use($user){
                 $name = $user->name;
                 $delete = $user->delete();
                 if(!$delete){
+                    DB::rollback();
                     throw new \Exception("User Delete is Failed");
                     return false;
                 }
                 $this->dataResponses["success"] = true;
                 $this->dataResponses["messages"] = "Succesfully Delete User : ".$name; 
+                DB::commit();
+
                 return true;
             }, 3);
             if(!$trans) return $this->responseJSON(500);

@@ -27,9 +27,9 @@ class UserRequest extends FormRequest
         $rules = [];
         $repo = new UserRepository(new User);
         $user = $repo->Find(["uuid" => $this->uuid]);
-        if(!$user) throw new \Exception("User Not found");
 
         if(request()->isMethod("put")):
+            if(!$user) throw new \Exception("User Not found");
             if(empty(request("password")) && empty(request("c_password"))){
                 $rules =  [
                     //
