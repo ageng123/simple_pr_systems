@@ -2,7 +2,9 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-
+use App\Http\Controllers\MasterData\{
+    User
+};
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -16,4 +18,11 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
+});
+Route::group(["prefix" => "users"], function(){
+    Route::get("/", [User::class, "index"])->name("api.user.index");
+    Route::post("/", [User::class, "store"])->name("api.user.store");
+    Route::get("/{uuid}", [User::class, "find"])->name("api.user.find");
+    Route::put("/{uuid}", [User::class, "update"])->name("api.user.update");
+
 });
