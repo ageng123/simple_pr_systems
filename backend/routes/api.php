@@ -26,3 +26,6 @@ Route::group(["prefix" => "users"], function(){
     Route::put("/{uuid}", [User::class, "update"])->name("api.user.update");
     Route::delete("/{uuid}", [User::class, "delete"])->name("api.user.delete");
 });
+Route::group(["prefix" => "auth"], function(){
+    Route::post("authenticate", [User::class, "authenticate"])->name("api.auth.login");
+});

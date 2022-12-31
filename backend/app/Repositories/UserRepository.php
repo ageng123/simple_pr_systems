@@ -2,7 +2,7 @@
 namespace App\Repositories;
 use App\Models\User;
 use App\Interfaces\MasterDataInterface;
-
+use JWTAuth;
 class UserRepository implements MasterDataInterface {
     protected $model;
     public function __construct(User $model){
@@ -30,4 +30,11 @@ class UserRepository implements MasterDataInterface {
     public function Model(){
         return $this->model;
     }
+    public function GenerateToken(User $user){
+        $token = JWTAuth::fromUser($user);
+        if($token){
+            return $token;
+        }
+    }
+    
 }

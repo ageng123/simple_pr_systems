@@ -9,6 +9,7 @@ use DB;
 use App\Http\Requests\MasterData\UserRequest;
 use Illuminate\Support\Str;
 use Hash;
+use App\Http\Requests\LoginRequest;
 class User extends Controller
 {
     //
@@ -128,5 +129,56 @@ class User extends Controller
             $this->dataResponses = ["error" => $e->getMessage(), "success" => false] ;
             return $this->responseJSON(500);
         }
+    }
+    public function register(UserRequest $request){
+        try{
+            $user = [];
+            $transaction = DB::transaction(function()use($request, &$user){
+                $arrRequest = $request->toArray();
+                if(empty($arrRequest["phone_number"])) $arrRequest["phone_number"] = 0;
+                if(empty($arrRequest["uuid"])) $arrRequest["uuid"] = Str::orderedUuid();
+                $this->dataResponses["data"] = $arrRequest;
+                $arrRequest["password"] = Hash::make($arrRequest["password"]);
+                $save = $this->repository->save($arrRequest);
+                if(!$save) {
+                    DB::rollback();
+                    throw new \Exception ("Error Save data to DB");
+                    return false;
+                }
+                DB::commit();
+                $user = $this->repository->Find(["uuid" => $arrRequest["uuid"]]);
+                $this->dataResponses["success"] = true;
+                $this->dataResponses["messages"] = "Successfully Insert User Data";
+                return true;
+            },3);
+            $signUser = $this->repository->GenerateToken($user);
+            $this->dataResponses["data"] = ["token" => $signUser];
+            if($transaction) return $this->responseJSON(201);
+            return $this->responseJSON(500);
+        }catch(\Exception $e){
+            $this->dataResponses = ["errors" => $e->getMessage(), "success" => false] ;
+            return $this->responseJSON(500);
+        }
+    }
+    public function authenticate(LoginRequest $request){
+        try {
+            $user = $this->repository->Model()->where("nip", $request->username)->orWhere("email", $request->username)->first();
+            $this->dataResponses["data"] = $user;
+            if(!$user) throw new \Exception("Username is wrong");
+            if(!Hash::check($request->password, $user->password)) throw new \Exception("Password is wrong");
+            $auth = $this->repository->GenerateToken($user);
+            if($auth){
+                $this->dataResponses["data"] = ["token" => $auth];
+                $this->dataResponses["success"] = true;
+                return $this->responseJSON(200);
+            }
+            throw new \Exception("Error generate Token");
+        }catch(\Exception $e){
+            $this->dataResponses["errors"] = $e->getMessage();
+            $this->dataResponses["success"] = false;
+            return $this->responseJSON(500);
+        }
+       
+
     }
 }

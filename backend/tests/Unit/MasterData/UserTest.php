@@ -41,9 +41,24 @@ class UserTest extends TestCase
         $response = $this->putJson("/api/users/".$user->uuid, ["name" => $this->faker->name, "email" => $this->faker->email, "password" => "password", "c_password" => "password", "user_status" => '1', "nip" => $this->faker->numerify("############"), "phone_number" => $this->faker->e164PhoneNumber]);
         $response->assertStatus(200);
     }
+    public function test_register_user(){
+        $response = $this->postJson("/api/users", ["name" => $this->faker->name, "email" => $this->faker->email, "password" => "password", "c_password" => "password", "user_status" => '1', "nip" => $this->faker->numerify("############"), "phone_number" => $this->faker->e164PhoneNumber]);
+        $response->assertStatus(201);
+    }
+    public function test_authentication_with_email(){
+        $user = User::inRandomOrder()->first();
+        $response = $this->postJson("/api/auth/authenticate", ["username" => $user->email, "password" => "password"]);
+        $response->assertStatus(200);
+    }
+    public function test_authentication_with_nip(){
+        $user = User::inRandomOrder()->first();
+        $response = $this->postJson("/api/auth/authenticate", ["username" => $user->nip, "password" => "password"]);
+        $response->assertStatus(200);
+    }
     public function test_delete_user(){
         $user = User::inRandomOrder()->first();
         $response = $this->deleteJson("/api/users/".$user->uuid);
         $response->assertStatus(200);
     }
+   
 }
