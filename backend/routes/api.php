@@ -3,7 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MasterData\{
-    User
+    User,Role
 };
 /*
 |--------------------------------------------------------------------------
@@ -29,3 +29,4 @@ Route::group(["prefix" => "users"], function(){
 Route::group(["prefix" => "auth"], function(){
     Route::post("authenticate", [User::class, "authenticate"])->name("api.auth.login");
 });
+Route::resource('role', Role::class);

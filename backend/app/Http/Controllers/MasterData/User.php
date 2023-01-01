@@ -163,7 +163,7 @@ class User extends Controller
     public function authenticate(LoginRequest $request){
         try {
             $user = $this->repository->Model()->where("nip", $request->username)->orWhere("email", $request->username)->first();
-            $this->dataResponses["data"] = $user;
+            $this->dataResponses["data"] = $request->toArray();
             if(!$user) throw new \Exception("Username is wrong");
             if(!Hash::check($request->password, $user->password)) throw new \Exception("Password is wrong");
             $auth = $this->repository->GenerateToken($user);
