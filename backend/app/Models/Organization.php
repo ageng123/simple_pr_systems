@@ -12,4 +12,7 @@ class Organization extends Model
     protected $table = "organizations";
     protected $primaryKey = "organization_id";
     protected $guarded = [];
+    public function parent(){
+        return $this->belongsTo(Organization::class, 'organization_parent', 'organization_id');
+    }
 }

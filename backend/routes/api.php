@@ -3,7 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MasterData\{
-    User,Role
+    User,Role,Organization
 };
 /*
 |--------------------------------------------------------------------------
@@ -30,3 +30,11 @@ Route::group(["prefix" => "auth"], function(){
     Route::post("authenticate", [User::class, "authenticate"])->name("api.auth.login");
 });
 Route::resource('role', Role::class);
+Route::group(["prefix"=>"organization"], function(){
+    Route::get("/tree/{id}", [Organization::class, 'tree'])->name('api.org.tree');
+    Route::get("/", [Organization::class, 'index'])->name("api.org.get_all");
+    Route::post("/", [Organization::class, 'store'])->name("api.org.store");
+    Route::get("/{id}", [Organization::class, 'show'])->name("api.org.get");
+    Route::put("/{id}", [Organization::class, 'update'])->name("api.org.update");
+    Route::delete("/{id}", [Organization::class, 'delete'])->name("api.org.delete");
+});
